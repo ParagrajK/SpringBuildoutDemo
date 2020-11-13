@@ -38,7 +38,7 @@ insert into user (username, occupation) values  ('DDDD', 'DDDD');
 
 - Create a new Spring Maven Project in SpringToolSuite and add following dependencies in the **pom.xml** file.
 ```xml
-    <dependency>
+    		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
@@ -83,14 +83,122 @@ insert into user (username, occupation) values  ('DDDD', 'DDDD');
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-	</dependency>
+		</dependency>
 ```
 
 ## RestController
 
-- Created a `UserController` using **@RestController** annotation. `UserController` is capable to handle `GET`, `POST`, `PUT` & `DELETE` requests.
+- The `UserController` is created using **@RestController** annotation. `UserController` can handle `GET`, `POST`, `PUT` & `DELETE` requests.
 1. `GET` - `/users`: Returns the `List<Users>`
 2. `POST` - `/users`: Add `User` to the database
 3. `DELETE` - `/users/{id}`: Delete the particular `User` from the database
 4. `GET` - `/users/{id}`: Return the particular `User` from the database
 5. `PUT` - `/users/{id}`: Updated the particular `User` in the database
+
+## Repository (Spring-Data-JPA Repository)
+
+- The `UserDBRepository` is created using **@Repository** annotation. The `UserDBRepository` extends `JpaRepository`, the `JpaRepository` provides additional functionality like Sorting, find data by `Example`, etc. 
+```java
+@Repository
+public interface UserDBRepository extends JpaRepository<User, Integer> {
+
+}
+```
+- The `UserRepository` can also be extended from `CrudRepository` as we are doing CRUD operations only.
+```java
+@Repository
+public interface UserDBRepository extends CrudRepository<User, Integer> {
+
+}
+```
+
+## REST exception handling with custom response entity
+
+- The `ErrorResponse` is used to send the error message and date as REST response.
+- The `CustomExceptionHandler` is used to handle the exception of specific types or generic using the following syntax.
+```java
+@ExceptionHandler(UserNotFoundException.class)
+public ResponseEntity<ErrorResponse> handleUserNotFoundException(@NonNull Exception ex, @NonNull WebRequest request) throws Exception {}
+
+@ExceptionHandler(Exception.class)
+public ResponseEntity<ErrorResponse> handleUserNotFoundException(@NonNull Exception ex, @NonNull WebRequest request) throws Exception {}
+```
+- The class `CustomExceptionHandler` is extends from `ResponseEntityExceptionHandler` which we can use as centralise exception handler. `CustomExceptionHandler` should be annotated with **@ControllerAdvice** and **@Controller**.
+- The methods declared in the classes which are marked as **@ControllerAdvice** annotation are apply globally to all controllers. However, we can use selectors if we need to filter controllers.
+
+## API Versioning with using HandlerMethodArgumentResolver
+
+- The new annotation **@APIVersion** has been created to detect API version from url and initialise the method parameter which are annotated with `@APIVersion`.
+- The annotation is working like other annotations e.g. `@ResponseBody`, `@RequestParam`, etc.
+- To resolve the API version, created a `@Component` as `APIVersionParameterResolver` which implements `HandlerMethodArgumentResolver`. Refer below sample code to resolve API version from url.
+```java
+@Component
+public class APIVersionParameterResolver implements HandlerMethodArgumentResolver {
+
+	private static final String VERSION = "version";
+
+	@Override
+	public boolean supportsParameter(@NonNull MethodParameter parameter) {
+		return parameter.getParameterAnnotation(APIVersion.class) != null;
+	}
+
+	@Override
+	public Object resolveArgument(@NonNull MethodParameter parameter, 
+			@NonNull ModelAndViewContainer mavContainer,
+			@NonNull NativeWebRequest webRequest, 
+			@NonNull WebDataBinderFactory binderFactory) throws Exception {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) webRequest.getNativeRequest();
+		String version = httpServletRequest.getParameter(VERSION);
+
+		Version apiVersion = new Version();
+		if (StringUtils.isEmpty(version)) {
+			APIVersion parameterAnnotation = parameter.getParameterAnnotation(APIVersion.class);
+			if (parameterAnnotation != null) {
+				apiVersion.setApiVersion(parameterAnnotation.value());
+			}
+			return apiVersion;
+		}
+		apiVersion.setApiVersion(Integer.parseInt(version));
+		return apiVersion;
+	}
+}
+```
+- The `APIVersionParameterResolver` has been registered with `WebMvcConfigurer` to resolve the arguments.
+```java
+@Configuration
+public class APIVersionResolverConfiguration implements WebMvcConfigurer {
+
+	@Autowired
+	APIVersionParameterResolver apiVersionParameterResolver;
+
+	@Override
+	public void addArgumentResolvers(@NonNull List<HandlerMethodArgumentResolver> resolvers) {
+		resolvers.add(apiVersionParameterResolver);
+	}
+}
+```
+
+## Spring Qualified Bean and access it using Bean name
+
+- In this project, two services has been exposed.
+1. `UserStaticDBService` - Uses `UserRepository` which has static list of User.
+2. `UserMySQLDBService` - Uses `UserDBRepository` which works on MySQL database.
+- The Beans for both the services has been created with the name. These types of Beans are called as qualified beans:
+```java
+@Service("Version1")
+public class UserStaticDBService implements BaseUserService {}
+
+@Service("Version2")
+public class UserMySQLDBService implements BaseUserService {}
+```
+- When the request url contains *version=1*, then the `UserStaticDBService` is being invoked whereas for *version=2*, `UserMySQLDBService` is being invoked.
+- The `UserController` is used to handle the request and invoke respective service by using version.
+- As both the services implements BaseUserService, so Injected the services into the `UserController` in a following way:
+```java
+@Autowired
+Map<String, BaseUserService> baseUserControllerImpl;
+```
+- Accessed the respective service by passing the Bean name i.e. version name and performed actions on it.
+```java
+BaseUserService = baseUserControllerImpl.get(version.toString());
+```
