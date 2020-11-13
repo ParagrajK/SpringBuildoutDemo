@@ -1,4 +1,4 @@
-# SpringDemo
+# SpringBuildoutDemo
 
 This project is created to learn Spring-boot concepts. In this project, there are two user repositories. One repository is using static data where as other one is using data from MySQL database.
 
