@@ -24,8 +24,8 @@ import com.buildout.config.Version;
 import com.buildout.model.User;
 
 /**
- * Use controller which is responsible to handle REST request/response for
- * registered mappings.
+ * Use controller which is responsible to handle REST request/response 
+ * for registered mappings.
  * 
  * @author Paragraj Kale
  *
