@@ -4,11 +4,11 @@ This project is created to learn Spring-boot concepts. In this project, there ar
 
 ### List of topics which are covered in this project:
 
-1. [RestController](https://github.com/ParagrajK/SpingDemo#restcontroller)
-2. [Repository (Spring-Data-JPA Repository)](https://github.com/ParagrajK/SpingDemo#repository-spring-data-jpa-repository)
-3. [REST exception handling with custom response entity](https://github.com/ParagrajK/SpingDemo#rest-exception-handling-with-custom-response-entity)
-4. [API Versioning with using HandlerMethodArgumentResolver](https://github.com/ParagrajK/SpingDemo#api-versioning-with-using-handlermethodargumentresolver)
-5. [Spring Qualified Bean and access it using Bean name](https://github.com/ParagrajK/SpingDemo#spring-qualified-bean-and-access-it-using-bean-name)
+1. [RestController](https://github.com/ParagrajK/SpringBuildoutDemo#restcontroller)
+2. [Repository (Spring-Data-JPA Repository)](https://github.com/ParagrajK/SpringBuildoutDemo#repository-spring-data-jpa-repository)
+3. [REST exception handling with custom response entity](https://github.com/ParagrajK/SpringBuildoutDemo#rest-exception-handling-with-custom-response-entity)
+4. [API Versioning with using HandlerMethodArgumentResolver](https://github.com/ParagrajK/SpringBuildoutDemo#api-versioning-with-using-handlermethodargumentresolver)
+5. [Spring Qualified Bean and access it using Bean name](https://github.com/ParagrajK/SpringBuildoutDemo#spring-qualified-bean-and-access-it-using-bean-name)
 
 ## Prerequisite
 
